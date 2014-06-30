@@ -1,92 +1,28 @@
 # coding: utf-8
 
-# まだまだリファクタリングしたかったのですが、挑戦者枠が残り2人となってしまったので提出します。
-# Rubyでまともに動くプログラムを組むのは初めてでしたが楽しかったです。
 class KaraokeMachine
-  # メロディと数字のマップ配列
-  @@melody_maps ={
-      'C' => 0,
-      'C#' => 1,
-      'D' => 2,
-      'D#' => 3,
-      'E' => 4,
-      'F' => 5,
-      'F#' => 6,
-      'G' => 7,
-      'G#' => 8,
-      'A' => 9,
-      'A#' => 10,
-      'B' => 11,
-  }
+  # 音階配列
+  MELODY_MAPS = ['C', 'C#', 'D','D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
   # 初期処理
   def initialize(melody)
-    # 元のメロディ文字列を配列に変換
-    @originals = melody.split("")
-    @@numbers = []
-    @prev = ''
-    # 配列内の音のみ数字に変換して保管
-    @originals.each{|value|
-      if @prev != '#'
-        if value === '#'
-          # シャープ検索
-          @@numbers.push @@melody_maps[@prev + value]
-        else
-          melody_match(@prev)
-        end
-      end
-      @prev = value
-    }
-
-    #残りの最後の文字を変換
-    if @prev != '#'
-      melody_match(@prev)
-    end
+    # メロディをばらして配列に変換
+    @melody = melody.scan(/[A-G| ]#*/)
   end
 
    # メロディ変換
   def transpose(amount)
-    @results = []
-    @melody_maps_reverse =  @@melody_maps.invert
-    # 数字変換したmelody配列の各数字をamount分移動
-    @@numbers.each{|value|
-      # 数字判定
-      if value.is_a?(Integer)
-        value = value + amount
-        @map_length = @@melody_maps.length
-        # 1オクターブ上がる
-        if value > 11
-          if value > 22
-            value = value.modulo(@map_length)
-            value = @map_length + value
-          end
-          value = value - 12
-        # 1オクターブ下がる
-        elsif value < 0
-          if value <= -11
-            value = value.modulo(@map_length)
-            value = value - @map_length
-          end
-          value = @map_length + value
-        end
-        @results.push @melody_maps_reverse[value]
-      else
-        @results.push value
-      end
+    results = ''
+    # 音階配列を引数分回転
+    moved_melody_maps = MELODY_MAPS.rotate(amount)
+    @melody.each{|value|
+      # 音階配列からインデックス取得
+      index = MELODY_MAPS.index(value)
+      # 回転した音階配列からインデックスの値を取得して結果文字列に繋げる
+      results += index ? moved_melody_maps[index] : value
     }
 
-    # 結果を文字列にして返す
-    return @results.join("")
-  end
-
-  # 配列の値があれば数字変換して保管
-  private
-  def melody_match(prev)
-    if @@melody_maps[prev]
-      @@numbers.push @@melody_maps[prev]
-    else
-      @@numbers.push prev
-    end
+    results
   end
 end
 
@@ -182,6 +118,7 @@ describe KaraokeMachine do
     answer = "C D E F |E D C   |E F G A |G F E   |C   C   |C   C   |CCDDEEFF|E D C   "
     expect(KaraokeMachine.new(melody).transpose(-6)).to eq answer
   end
+
   it "連続してtransposeを呼び出す" do
     melody = "C D E F |E D C   |E F G A |G F E   |C   C   |C   C   |CCDDEEFF|E D C   "
     karaoke = KaraokeMachine.new(melody)
@@ -194,5 +131,5 @@ describe KaraokeMachine do
 
      answer = "B C# D# E |D# C# B   |D# E F# G# |F# E D#   |B   B   |B   B   |BBC#C#D#D#EE|D# C# B   "
      expect(karaoke.transpose(-1)).to eq answer
-   end
+  end
 end
