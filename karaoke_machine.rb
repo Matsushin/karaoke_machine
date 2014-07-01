@@ -2,27 +2,24 @@
 
 class KaraokeMachine
   # 音階配列
-  MELODY_MAPS = ['C', 'C#', 'D','D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+  MELODY_MAPS = %w(C C# D D# E F F# G G# A A# B)
 
   # 初期処理
   def initialize(melody)
     # メロディをばらして配列に変換
-    @melody = melody.scan(/[A-G| ]#*/)
+    @melody = melody.scan(/[A-G| ]#?/)
   end
 
    # メロディ変換
   def transpose(amount)
-    results = ''
     # 音階配列を引数分回転
     moved_melody_maps = MELODY_MAPS.rotate(amount)
-    @melody.each{|value|
+    @melody.map{|value|
       # 音階配列からインデックス取得
       index = MELODY_MAPS.index(value)
       # 回転した音階配列からインデックスの値を取得して結果文字列に繋げる
-      results += index ? moved_melody_maps[index] : value
-    }
-
-    results
+      index ? moved_melody_maps[index] : value
+    }.join
   end
 end
 
